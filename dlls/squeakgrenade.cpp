@@ -508,10 +508,12 @@ void CSqueak::PrimaryAttack()
 		// Move origin up if crouched and start trace a bit outside of body ( 20 units instead of 16 )
 		float flAimDownFraction = m_pPlayer->pev->v_angle[0] > 0 ? m_pPlayer->pev->v_angle[0] / 90.f : 0;
 		trace_origin = m_pPlayer->pev->origin;
+		/* goldadv edit - Crouch removed
 		if ((m_pPlayer->pev->flags & FL_DUCKING) != 0)
 		{
 			trace_origin = trace_origin - (flAimDownFraction + 1) * (VEC_HULL_MIN - VEC_DUCK_HULL_MIN);
 		}
+		*/
 
 		Vector vTraceForward = (flAimDownFraction * vEntityForward) + (1 - flAimDownFraction) * forward;
 		// find place to toss monster

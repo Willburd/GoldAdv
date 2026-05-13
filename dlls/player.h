@@ -210,7 +210,7 @@ public:
 
 	//	void Think() override;
 	virtual void Jump();
-	virtual void Duck();
+	// virtual void Duck(); // goldadv edit - Crouch removed
 	virtual void PreThink();
 	virtual void PostThink();
 	Vector GetGunPosition() override;

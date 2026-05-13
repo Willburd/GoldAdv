@@ -243,7 +243,7 @@ void CBasePlayer::StartDeathCam() {}
 void CBasePlayer::StartObserver(Vector vecPosition, Vector vecViewAngle) {}
 void CBasePlayer::PlayerUse() {}
 void CBasePlayer::Jump() {}
-void CBasePlayer::Duck() {}
+//void CBasePlayer::Duck() {} // goldadv edit - Crouch removed
 int CBasePlayer::Classify() { return 0; }
 void CBasePlayer::PreThink() {}
 void CBasePlayer::CheckTimeBasedDamage() {}

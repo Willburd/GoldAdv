@@ -569,10 +569,12 @@ void CGamePlayerZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 			int hullNumber;
 
 			hullNumber = human_hull;
+			/* goldadv edit - Crouch removed
 			if ((pPlayer->pev->flags & FL_DUCKING) != 0)
 			{
 				hullNumber = head_hull;
 			}
+			*/
 
 			UTIL_TraceModel(pPlayer->pev->origin, pPlayer->pev->origin, hullNumber, edict(), &trace);
 

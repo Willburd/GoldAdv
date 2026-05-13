@@ -594,7 +594,7 @@ void PM_UpdateStepSound()
 	const bool fLadder = (pmove->movetype == MOVETYPE_FLY); // IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!
-	if ((pmove->flags & FL_DUCKING) != 0 || fLadder)
+	if (/* goldadv edit - Crouch removed(pmove->flags & FL_DUCKING) != 0 || */ fLadder)
 	{
 		velwalk = 60; // These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
 		velrun = 80;  // UNDONE: Move walking to server
@@ -694,10 +694,12 @@ void PM_UpdateStepSound()
 
 		// play the sound
 		// 35% volume if ducking
+		/* goldadv edit - Crouch removed
 		if ((pmove->flags & FL_DUCKING) != 0)
 		{
 			fvol *= 0.35;
 		}
+		*/
 
 		PM_PlayStepSound(step, fvol);
 	}
@@ -2009,6 +2011,7 @@ void PM_FixPlayerCrouchStuck(int direction)
 	VectorCopy(test, pmove->origin); // Failed
 }
 
+/* goldadv edit - Crouch removed
 void PM_UnDuck()
 {
 	int i;
@@ -2041,7 +2044,7 @@ void PM_UnDuck()
 			return;
 		}
 
-		pmove->flags &= ~FL_DUCKING;
+		//pmove->flags &= ~FL_DUCKING; // goldadv edit - Crouch removed
 		pmove->bInDuck = 0;
 		pmove->view_ofs = VEC_VIEW;
 		pmove->flDuckTime = 0;
@@ -2052,7 +2055,9 @@ void PM_UnDuck()
 		PM_CatagorizePosition();
 	}
 }
+*/
 
+/* goldadv edit - Crouch removed
 void PM_Duck()
 {
 	int i;
@@ -2147,6 +2152,7 @@ void PM_Duck()
 		}
 	}
 }
+*/
 
 void PM_LadderMove(physent_t* pLadder)
 {
@@ -3073,13 +3079,15 @@ void PM_PlayerMove(qboolean server)
 	{
 		if (PM_CheckStuck())
 		{
+			/* goldadv edit - Crouch removed
 			// Let the user try to duck to get unstuck
 			PM_Duck();
 
 			if (PM_CheckStuck())
 			{
-				return; // Can't move, we're stuck
-			}
+			*/
+			return; // Can't move, we're stuck
+			// }
 		}
 	}
 
@@ -3108,7 +3116,9 @@ void PM_PlayerMove(qboolean server)
 
 	PM_UpdateStepSound();
 
+	/* goldadv edit - Crouch removed
 	PM_Duck();
+	*/
 
 	// Don't run ladder code if dead or on a train
 	if (0 == pmove->dead && (pmove->flags & FL_ONTRAIN) == 0)
