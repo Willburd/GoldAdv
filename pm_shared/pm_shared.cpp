@@ -3215,7 +3215,9 @@ void PM_PlayerMove(qboolean server)
 			// Was jump button pressed?
 			if ((pmove->cmd.buttons & IN_JUMP) != 0)
 			{
+				/* goldadv edit - Manual jumping removed
 				PM_Jump();
+				*/
 			}
 			else
 			{
@@ -3239,7 +3241,9 @@ void PM_PlayerMove(qboolean server)
 			{
 				if (!pLadder)
 				{
+					/* goldadv edit - Manual jumping removed
 					PM_Jump();
+					*/
 				}
 			}
 			else

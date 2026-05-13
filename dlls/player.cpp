@@ -2026,13 +2026,14 @@ void CBasePlayer::PreThink()
 	else if ((m_iTrain & TRAIN_ACTIVE) != 0)
 		m_iTrain = TRAIN_NEW; // turn off train
 
+	/* goldadv edit - Manual jumping removed
 	if ((pev->button & IN_JUMP) != 0)
 	{
 		// If on a ladder, jump off the ladder
 		// else Jump
 		Jump();
 	}
-
+	*/
 
 	/* goldadv edit - Crouch removed
 	// If trying to duck, already ducked, or in the process of ducking
