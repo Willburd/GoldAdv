@@ -1,4 +1,4 @@
-LIBRARY hl
+LIBRARY goldadv
 EXPORTS
 	GiveFnptrsToDll			@1
 SECTIONS

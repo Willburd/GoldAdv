@@ -1,0 +1,6 @@
+game "GoldAdv"
+type "singleplayer_only"
+startmap "a0s0"
+trainmap "t0a0"
+gamedll "dlls/goldadv.dll"
+gamedll_linux "dlls/goldadv.so"
