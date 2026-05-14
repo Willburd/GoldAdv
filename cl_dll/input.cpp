@@ -974,10 +974,12 @@ void InitInput()
 	cl_anglespeedkey = gEngfuncs.pfnRegisterVariable("cl_anglespeedkey", "0.67", 0);
 	cl_yawspeed = gEngfuncs.pfnRegisterVariable("cl_yawspeed", "210", 0);
 	cl_pitchspeed = gEngfuncs.pfnRegisterVariable("cl_pitchspeed", "225", 0);
-	cl_upspeed = gEngfuncs.pfnRegisterVariable("cl_upspeed", "320", 0);
-	cl_forwardspeed = gEngfuncs.pfnRegisterVariable("cl_forwardspeed", "400", FCVAR_ARCHIVE);
-	cl_backspeed = gEngfuncs.pfnRegisterVariable("cl_backspeed", "400", FCVAR_ARCHIVE);
-	cl_sidespeed = gEngfuncs.pfnRegisterVariable("cl_sidespeed", "400", 0);
+	// goldadv edit begin - Tweaked movement speeds
+	cl_upspeed = gEngfuncs.pfnRegisterVariable("cl_upspeed", "100", 0);
+	cl_forwardspeed = gEngfuncs.pfnRegisterVariable("cl_forwardspeed", "115", FCVAR_ARCHIVE);
+	cl_backspeed = gEngfuncs.pfnRegisterVariable("cl_backspeed", "145", FCVAR_ARCHIVE);
+	cl_sidespeed = gEngfuncs.pfnRegisterVariable("cl_sidespeed", "145", 0);
+	// goldadv edit end
 	cl_movespeedkey = gEngfuncs.pfnRegisterVariable("cl_movespeedkey", "0.3", 0);
 	cl_pitchup = gEngfuncs.pfnRegisterVariable("cl_pitchup", "89", 0);
 	cl_pitchdown = gEngfuncs.pfnRegisterVariable("cl_pitchdown", "89", 0);
