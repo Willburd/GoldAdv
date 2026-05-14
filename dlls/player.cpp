@@ -251,14 +251,14 @@ int TrainSpeed(int iSpeed, int iMax)
 
 void CBasePlayer::DeathSound()
 {
+	// goldadv edit begin - Enable drowning sound
 	// water death sounds
-	/*
 	if (pev->waterlevel == 3)
 	{
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE);
 		return;
 	}
-	*/
+	// goldadv edit end
 
 	// temporarily using pain sounds for death sounds
 	switch (RANDOM_LONG(1, 5))
@@ -275,7 +275,7 @@ void CBasePlayer::DeathSound()
 	}
 
 	// play one of the suit death alarms
-	EMIT_GROUPNAME_SUIT(ENT(pev), "HEV_DEAD");
+	// EMIT_GROUPNAME_SUIT(ENT(pev), "HEV_DEAD"); // goldadv edit - No HEV suit death sound
 }
 
 // override takehealth
