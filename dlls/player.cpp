@@ -1917,7 +1917,7 @@ void CBasePlayer::PreThink()
 
 	CheckTimeBasedDamage();
 
-	CheckSuitUpdate();
+	// CheckSuitUpdate(); // goldadv edit - No HEV suit voice
 
 	// Observer Button Handling
 	if (IsObserver())
