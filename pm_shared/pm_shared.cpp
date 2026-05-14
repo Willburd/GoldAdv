@@ -1402,13 +1402,21 @@ void PM_WaterMove()
 	// user intentions
 	//
 	for (i = 0; i < 3; i++)
+	{
+		// goldadv TODO - solve issue where aiming down slows swimming speed due to very tiny post-transform forward vector
 		wishvel[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
+	}
 
+	/* goldadv edit begin - Always stay near the surface unless diving
 	// Sinking after no other movement occurs
 	if (0 == pmove->cmd.forwardmove && 0 == pmove->cmd.sidemove && 0 == pmove->cmd.upmove)
 		wishvel[2] -= 60; // drift towards bottom
 	else				  // Go straight up by upmove amount.
 		wishvel[2] += pmove->cmd.upmove;
+	*/
+	wishvel[2] = 90; // Upward movement by default
+	// pmove->cmd.upmove // TODO - Diving and underwater movement
+	// goldadv edit end
 
 	// Copy it over and determine speed
 	VectorCopy(wishvel, wishdir);
@@ -1421,7 +1429,7 @@ void PM_WaterMove()
 		wishspeed = pmove->maxspeed;
 	}
 	// Slow us down a bit.
-	wishspeed *= 0.8;
+	wishspeed *= 0.6; // goldadv edit - Slow down swimming significantly
 
 	VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
 	// Water friction
