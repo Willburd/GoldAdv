@@ -12,35 +12,28 @@
 #include "cvardef.h"
 #include "usercmd.h"
 #include "const.h"
+#include "camera.h"
 #include "in_defs.h"
 #include "Exports.h"
-#include "pm_defs.h"
-#include "pmtrace.h"
-#include "event_api.h"
-#include "vgui_TeamFortressViewport.h"
-#include <cmath>
 
 #include "SDL2/SDL_mouse.h"
 
 float CL_KeyState(kbutton_t* key);
 
 extern cl_enginefunc_t gEngfuncs;
-extern Vector v_angles;
 
 //-------------------------------------------------- Constants
 
 #define CAM_DIST_DELTA 1.0
 #define CAM_ANGLE_DELTA 2.5
 #define CAM_ANGLE_SPEED 2.5
-#define CAM_MIN_DIST 4.0
+#define CAM_MIN_DIST 30.0
 #define CAM_ANGLE_MOVE .5
 #define MAX_ANGLE_DIFF 10.0
 #define PITCH_MAX 90.0
 #define PITCH_MIN 0
 #define YAW_MAX 135.0
 #define YAW_MIN -135.0
-#define CAM_FADE_DIST 45
-#define CAM_WALL_EJECT 16
 
 enum ECAM_Command
 {
@@ -81,7 +74,6 @@ Point cam_mouse;
 
 static kbutton_t cam_pitchup, cam_pitchdown, cam_yawleft, cam_yawright;
 static kbutton_t cam_in, cam_out, cam_move;
-static int frames = 0; // static frame counter, used to prevent a nullptr issue when starting in thirdperson, see Wavelength camera code below
 
 //-------------------------------------------------- Prototypes
 
@@ -143,8 +135,6 @@ float MoveToward(float cur, float goal, float maxspeed)
 
 //-------------------------------------------------- Gobal Functions
 
-// goldadv edit begin - Third person camera bounds locking
-/*
 typedef struct
 {
 	Vector boxmins, boxmaxs; // enclose the test object along entire move
@@ -158,7 +148,6 @@ typedef struct
 } moveclip_t;
 
 extern trace_t SV_ClipMoveToEntity(edict_t* ent, Vector start, Vector mins, Vector maxs, Vector end);
-*/
 
 void DLLEXPORT CAM_Think()
 {
@@ -166,11 +155,13 @@ void DLLEXPORT CAM_Think()
 
 	Vector origin;
 	Vector ext, pnt, camForward, camRight, camUp;
-	//moveclip_t clip;
+	moveclip_t clip;
 	float dist;
 	Vector camAngles;
 	float flSensitivity;
+#ifdef LATER
 	int i;
+#endif
 	Vector viewangles;
 
 	switch ((int)cam_command->value)
@@ -190,6 +181,14 @@ void DLLEXPORT CAM_Think()
 
 	if (!cam_thirdperson)
 		return;
+
+#ifdef LATER
+	if (cam_contain->value)
+	{
+		gEngfuncs.GetClientOrigin(origin);
+		ext[0] = ext[1] = ext[2] = 0.0;
+	}
+#endif
 
 	camAngles[PITCH] = cam_idealpitch->value;
 	camAngles[YAW] = cam_idealyaw->value;
@@ -332,78 +331,83 @@ void DLLEXPORT CAM_Think()
 		cam_old_mouse_y = cam_mouse.y * gHUD.GetSensitivity();
 		SDL_SetCursorPos(gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY());
 	}
-
-	if (cam_contain->value > 0.0f)
+#ifdef LATER
+	if (cam_contain->value)
 	{
-		// Modified Wavelength thirdperson camera, see "https://twhl.info/wiki/page/Wavelength%3A_Better_Third_Person_Camera"
-		float wall_distance;
-		pmtrace_s tr;
-		Vector origin, camForward;
+		// check new ideal
+		VectorCopy(origin, pnt);
+		AngleVectors(camAngles, camForward, camRight, camUp);
+		for (i = 0; i < 3; i++)
+			pnt[i] += -dist * camForward[i];
 
-		// Update angles
-		VectorCopy(v_angles, camAngles);
-
-		// Test camera position
-		cl_entity_t* player = gEngfuncs.GetLocalPlayer();
-		if (frames < 5)
-			frames++; // cap at 5
-		if (player && (gEngfuncs.GetMaxClients() > 0) && (gViewPort && gEngfuncs.pEventAPI) && frames >= 5)
+		// check line from r_refdef.vieworg to pnt
+		memset(&clip, 0, sizeof(moveclip_t));
+		clip.trace = SV_ClipMoveToEntity(sv.edicts, r_refdef.vieworg, ext, ext, pnt);
+		if (clip.trace.fraction == 1.0)
 		{
-			origin = player->origin;
-			AngleVectors(camAngles, camForward, NULL, NULL); // get the forward vector
-			gEngfuncs.pEventAPI->EV_SetTraceHull(2);	   // use duck hull for traces
-			gEngfuncs.pEventAPI->EV_SetSolidPlayers(player->index - 1);
-			gEngfuncs.pEventAPI->EV_PlayerTrace(origin, origin - (camForward * (dist + CAM_WALL_EJECT)), PM_STUDIO_BOX, -1, &tr); // trace to maxDist +8 (leway for the bounding boxes)
-			dist = fmax(dist * tr.fraction, CAM_MIN_DIST); // pass  the distance off for the camera;
-
-			// calculate the players render amount based on distance from camera
-			player->curstate.renderamt = 255 * (dist < CAM_FADE_DIST ? (dist / CAM_FADE_DIST) : 1.0f); 
-			player->curstate.rendermode = kRenderTransColor;
+			// update ideal
+			cam_idealpitch->value = camAngles[PITCH];
+			cam_idealyaw->value = camAngles[YAW];
+			cam_idealdist->value = dist;
 		}
-
-		// Allow seperated yaw from player model
-		cam_ofs[1] = camAngles[1]; // goldadv TODO : Make player direction seperated from camera. So that the player can run in any facing direction
 	}
 	else
+#endif
 	{
 		// update ideal
 		cam_idealpitch->value = camAngles[PITCH];
 		cam_idealyaw->value = camAngles[YAW];
 		cam_idealdist->value = dist;
-
-		// Move towards ideal
-		VectorCopy(cam_ofs, camAngles);
-
-		gEngfuncs.GetViewAngles((float*)viewangles);
-
-		if (0 != cam_snapto->value)
-		{
-			camAngles[YAW] = cam_idealyaw->value + viewangles[YAW];
-			camAngles[PITCH] = cam_idealpitch->value + viewangles[PITCH];
-			camAngles[2] = cam_idealdist->value;
-		}
-		else
-		{
-			if (camAngles[YAW] - viewangles[YAW] != cam_idealyaw->value)
-				camAngles[YAW] = MoveToward(camAngles[YAW], cam_idealyaw->value + viewangles[YAW], CAM_ANGLE_SPEED);
-
-			if (camAngles[PITCH] - viewangles[PITCH] != cam_idealpitch->value)
-				camAngles[PITCH] = MoveToward(camAngles[PITCH], cam_idealpitch->value + viewangles[PITCH], CAM_ANGLE_SPEED);
-
-			if (fabs(camAngles[2] - cam_idealdist->value) < 2.0)
-				camAngles[2] = cam_idealdist->value;
-			else
-				camAngles[2] += (cam_idealdist->value - camAngles[2]) / 4.0;
-		}
-
-		// Lock camera to facing yaw
-		cam_ofs[1] = camAngles[1];
 	}
 
+	// Move towards ideal
+	VectorCopy(cam_ofs, camAngles);
+
+	gEngfuncs.GetViewAngles((float*)viewangles);
+
+	if (0 != cam_snapto->value)
+	{
+		camAngles[YAW] = cam_idealyaw->value + viewangles[YAW];
+		camAngles[PITCH] = cam_idealpitch->value + viewangles[PITCH];
+		camAngles[2] = cam_idealdist->value;
+	}
+	else
+	{
+		if (camAngles[YAW] - viewangles[YAW] != cam_idealyaw->value)
+			camAngles[YAW] = MoveToward(camAngles[YAW], cam_idealyaw->value + viewangles[YAW], CAM_ANGLE_SPEED);
+
+		if (camAngles[PITCH] - viewangles[PITCH] != cam_idealpitch->value)
+			camAngles[PITCH] = MoveToward(camAngles[PITCH], cam_idealpitch->value + viewangles[PITCH], CAM_ANGLE_SPEED);
+
+		if (fabs(camAngles[2] - cam_idealdist->value) < 2.0)
+			camAngles[2] = cam_idealdist->value;
+		else
+			camAngles[2] += (cam_idealdist->value - camAngles[2]) / 4.0;
+	}
+#ifdef LATER
+	if (cam_contain->value)
+	{
+		// Test new position
+		dist = camAngles[ROLL];
+		camAngles[ROLL] = 0;
+
+		VectorCopy(origin, pnt);
+		AngleVectors(camAngles, camForward, camRight, camUp);
+		for (i = 0; i < 3; i++)
+			pnt[i] += -dist * camForward[i];
+
+		// check line from r_refdef.vieworg to pnt
+		memset(&clip, 0, sizeof(moveclip_t));
+		ext[0] = ext[1] = ext[2] = 0.0;
+		clip.trace = SV_ClipMoveToEntity(sv.edicts, r_refdef.vieworg, ext, ext, pnt);
+		if (clip.trace.fraction != 1.0)
+			return;
+	}
+#endif
 	cam_ofs[0] = camAngles[0];
+	cam_ofs[1] = camAngles[1];
 	cam_ofs[2] = dist;
 }
-// goldadv edit end
 
 extern void KeyDown(kbutton_t* b); // HACK
 extern void KeyUp(kbutton_t* b);   // HACK
@@ -425,7 +429,6 @@ void CAM_ToThirdPerson()
 {
 	Vector viewangles;
 
-/* goldadv edit - We use thirdperson all the time
 #if !defined(_DEBUG)
 	if (gEngfuncs.GetMaxClients() > 1)
 	{
@@ -433,7 +436,7 @@ void CAM_ToThirdPerson()
 		return;
 	}
 #endif
-*/
+
 	gEngfuncs.GetViewAngles((float*)viewangles);
 
 	if (!cam_thirdperson)
@@ -482,14 +485,12 @@ void CAM_Init()
 	gEngfuncs.pfnAddCommand("-camdistance", CAM_EndDistance);
 	gEngfuncs.pfnAddCommand("snapto", CAM_ToggleSnapto);
 
-	// goldadv edit begin - Third person default camera
-	cam_command = gEngfuncs.pfnRegisterVariable("cam_command", "1", 0);		  // tells camera to go to thirdperson
-	cam_snapto = gEngfuncs.pfnRegisterVariable("cam_snapto", "1", 0);		  // snap to thirdperson view
-	cam_idealyaw = gEngfuncs.pfnRegisterVariable("cam_idealyaw", "0", 0);	  // thirdperson yaw
+	cam_command = gEngfuncs.pfnRegisterVariable("cam_command", "0", 0);		  // tells camera to go to thirdperson
+	cam_snapto = gEngfuncs.pfnRegisterVariable("cam_snapto", "0", 0);		  // snap to thirdperson view
+	cam_idealyaw = gEngfuncs.pfnRegisterVariable("cam_idealyaw", "90", 0);	  // thirdperson yaw
 	cam_idealpitch = gEngfuncs.pfnRegisterVariable("cam_idealpitch", "0", 0); // thirperson pitch
-	cam_idealdist = gEngfuncs.pfnRegisterVariable("cam_idealdist", "210", 0);  // thirdperson distance
-	cam_contain = gEngfuncs.pfnRegisterVariable("cam_contain", "1", 0);		  // contain camera to world
-	// goldadv edit end
+	cam_idealdist = gEngfuncs.pfnRegisterVariable("cam_idealdist", "64", 0);  // thirdperson distance
+	cam_contain = gEngfuncs.pfnRegisterVariable("cam_contain", "0", 0);		  // contain camera to world
 
 	c_maxpitch = gEngfuncs.pfnRegisterVariable("c_maxpitch", "90.0", 0);
 	c_minpitch = gEngfuncs.pfnRegisterVariable("c_minpitch", "0.0", 0);

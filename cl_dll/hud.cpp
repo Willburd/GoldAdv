@@ -332,8 +332,8 @@ void CHud::Init()
 	m_pCvarStealMouse = CVAR_CREATE("hud_capturemouse", "1", FCVAR_ARCHIVE);
 	m_pCvarDraw = CVAR_CREATE("hud_draw", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
-	cl_rollangle = CVAR_CREATE("cl_rollangle", "1.0", FCVAR_ARCHIVE); // goldadv edit - Lower roll angle
-	cl_rollspeed = CVAR_CREATE("cl_rollspeed", "100", FCVAR_ARCHIVE); // goldadv edit - Lower roll speed
+	cl_rollangle = CVAR_CREATE("cl_rollangle", "2.0", FCVAR_ARCHIVE);
+	cl_rollspeed = CVAR_CREATE("cl_rollspeed", "200", FCVAR_ARCHIVE);
 	cl_bobtilt = CVAR_CREATE("cl_bobtilt", "0", FCVAR_ARCHIVE);
 	r_decals = gEngfuncs.pfnGetCvarPointer("r_decals");
 

@@ -251,14 +251,14 @@ int TrainSpeed(int iSpeed, int iMax)
 
 void CBasePlayer::DeathSound()
 {
-	// goldadv edit begin - Enable drowning sound
 	// water death sounds
+	/*
 	if (pev->waterlevel == 3)
 	{
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE);
 		return;
 	}
-	// goldadv edit end
+	*/
 
 	// temporarily using pain sounds for death sounds
 	switch (RANDOM_LONG(1, 5))
@@ -275,7 +275,7 @@ void CBasePlayer::DeathSound()
 	}
 
 	// play one of the suit death alarms
-	// EMIT_GROUPNAME_SUIT(ENT(pev), "HEV_DEAD"); // goldadv edit - No HEV suit death sound
+	EMIT_GROUPNAME_SUIT(ENT(pev), "HEV_DEAD");
 }
 
 // override takehealth
@@ -996,12 +996,10 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 		return;
 
 	case ACT_RANGE_ATTACK1:
-		/* goldadv edit - Crouch removed
 		if (FBitSet(pev->flags, FL_DUCKING)) // crouching
 			strcpy(szAnim, "crouch_shoot_");
 		else
-		*/
-		strcpy(szAnim, "ref_shoot_");
+			strcpy(szAnim, "ref_shoot_");
 		strcat(szAnim, m_szAnimExtention);
 		animDesired = LookupSequence(szAnim);
 		if (animDesired == -1)
@@ -1026,12 +1024,10 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	case ACT_WALK:
 		if (m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished)
 		{
-			/* goldadv edit - Crouch removed
 			if (FBitSet(pev->flags, FL_DUCKING)) // crouching
 				strcpy(szAnim, "crouch_aim_");
 			else
-			*/
-			strcpy(szAnim, "ref_aim_");
+				strcpy(szAnim, "ref_aim_");
 			strcat(szAnim, m_szAnimExtention);
 			animDesired = LookupSequence(szAnim);
 			if (animDesired == -1)
@@ -1044,7 +1040,6 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 		}
 	}
 
-	/* goldadv edit - Crouch removed
 	if (FBitSet(pev->flags, FL_DUCKING))
 	{
 		if (speed == 0)
@@ -1057,9 +1052,7 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 			pev->gaitsequence = LookupActivity(ACT_CROUCH);
 		}
 	}
-	else 
-	*/
-	if (speed > 220)
+	else if (speed > 220)
 	{
 		pev->gaitsequence = LookupActivity(ACT_RUN);
 	}
@@ -1633,7 +1626,6 @@ void CBasePlayer::Jump()
 
 	SetAnimation(PLAYER_JUMP);
 
-	/* goldadv edit - Crouch removed
 	if (m_fLongJump &&
 		(pev->button & IN_DUCK) != 0 &&
 		(pev->flDuckTime > 0) &&
@@ -1641,7 +1633,6 @@ void CBasePlayer::Jump()
 	{
 		SetAnimation(PLAYER_SUPERJUMP);
 	}
-	*/
 
 	// If you're standing on a conveyor, add it's velocity to yours (for momentum)
 	entvars_t* pevGround = VARS(pev->groundentity);
@@ -1680,7 +1671,6 @@ void FixPlayerCrouchStuck(edict_t* pPlayer)
 	}
 }
 
-/* goldadv edit - Crouch removed
 void CBasePlayer::Duck()
 {
 	if ((pev->button & IN_DUCK) != 0)
@@ -1691,7 +1681,6 @@ void CBasePlayer::Duck()
 		}
 	}
 }
-*/
 
 //
 // ID's player as such.
@@ -1917,7 +1906,7 @@ void CBasePlayer::PreThink()
 
 	CheckTimeBasedDamage();
 
-	// CheckSuitUpdate(); // goldadv edit - No HEV suit voice
+	CheckSuitUpdate();
 
 	// Observer Button Handling
 	if (IsObserver())
@@ -2026,20 +2015,17 @@ void CBasePlayer::PreThink()
 	else if ((m_iTrain & TRAIN_ACTIVE) != 0)
 		m_iTrain = TRAIN_NEW; // turn off train
 
-	/* goldadv edit - Manual jumping removed
 	if ((pev->button & IN_JUMP) != 0)
 	{
 		// If on a ladder, jump off the ladder
 		// else Jump
 		Jump();
 	}
-	*/
 
-	/* goldadv edit - Crouch removed
+
 	// If trying to duck, already ducked, or in the process of ducking
 	if ((pev->button & IN_DUCK) != 0 || FBitSet(pev->flags, FL_DUCKING) || (m_afPhysicsFlags & PFLAG_DUCKING) != 0)
 		Duck();
-	*/
 
 	if (!FBitSet(pev->flags, FL_ONGROUND))
 	{
@@ -2995,13 +2981,11 @@ void CBasePlayer::Spawn()
 	SET_MODEL(ENT(pev), "models/player.mdl");
 	g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence = LookupActivity(ACT_IDLE);
-	
-	/* goldadv edit - Crouch removed
+
 	if (FBitSet(pev->flags, FL_DUCKING))
 		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 	else
-	*/
-	UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 
 	pev->view_ofs = VEC_VIEW;
 	Precache();
@@ -3118,7 +3102,6 @@ bool CBasePlayer::Restore(CRestore& restore)
 
 	g_ulModelIndexPlayer = pev->modelindex;
 
-	/* goldadv edit - Crouch removed
 	if (FBitSet(pev->flags, FL_DUCKING))
 	{
 		// Use the crouch HACK
@@ -3127,7 +3110,6 @@ bool CBasePlayer::Restore(CRestore& restore)
 		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 	}
 	else
-	*/
 	{
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 	}

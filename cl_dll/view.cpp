@@ -796,7 +796,6 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 		VectorCopy(camAngles, pparams->viewangles);
 	}
 
-	/* goldadv edit - Remove player model tilting with camera movement
 	//Apply this at all times
 	{
 		float pitch = pparams->viewangles[0];
@@ -816,7 +815,6 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 		ent->prevstate.angles[0] = pitch;
 		ent->latched.prevangles[0] = pitch;
 	}
-	*/
 
 	// override all previous settings if the viewent isn't the client
 	if (pparams->viewentity > pparams->maxclients)
