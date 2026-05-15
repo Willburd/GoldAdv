@@ -360,6 +360,9 @@ void DLLEXPORT CAM_Think()
 			player->curstate.renderamt = 255 * (dist < CAM_FADE_DIST ? (dist / CAM_FADE_DIST) : 1.0f); 
 			player->curstate.rendermode = kRenderTransColor;
 		}
+
+		// Allow seperated yaw from player model
+		cam_ofs[1] = camAngles[1]; // goldadv TODO : Make player direction seperated from camera. So that the player can run in any facing direction
 	}
 	else
 	{
@@ -392,10 +395,12 @@ void DLLEXPORT CAM_Think()
 			else
 				camAngles[2] += (cam_idealdist->value - camAngles[2]) / 4.0;
 		}
+
+		// Lock camera to facing yaw
+		cam_ofs[1] = camAngles[1];
 	}
 
 	cam_ofs[0] = camAngles[0];
-	cam_ofs[1] = camAngles[1];
 	cam_ofs[2] = dist;
 }
 // goldadv edit end
