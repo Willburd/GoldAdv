@@ -425,6 +425,7 @@ void CAM_ToThirdPerson()
 {
 	Vector viewangles;
 
+/* goldadv edit - We use thirdperson all the time
 #if !defined(_DEBUG)
 	if (gEngfuncs.GetMaxClients() > 1)
 	{
@@ -432,7 +433,7 @@ void CAM_ToThirdPerson()
 		return;
 	}
 #endif
-
+*/
 	gEngfuncs.GetViewAngles((float*)viewangles);
 
 	if (!cam_thirdperson)
