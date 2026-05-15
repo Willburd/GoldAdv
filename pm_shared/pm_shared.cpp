@@ -594,7 +594,7 @@ void PM_UpdateStepSound()
 	const bool fLadder = (pmove->movetype == MOVETYPE_FLY); // IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!
-	if (/* goldadv edit - Crouch removed(pmove->flags & FL_DUCKING) != 0 || */ fLadder)
+	if ((pmove->flags & FL_DUCKING) != 0 || fLadder)
 	{
 		velwalk = 60; // These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
 		velrun = 80;  // UNDONE: Move walking to server
@@ -694,12 +694,10 @@ void PM_UpdateStepSound()
 
 		// play the sound
 		// 35% volume if ducking
-		/* goldadv edit - Crouch removed
 		if ((pmove->flags & FL_DUCKING) != 0)
 		{
 			fvol *= 0.35;
 		}
-		*/
 
 		PM_PlayStepSound(step, fvol);
 	}
@@ -1402,21 +1400,13 @@ void PM_WaterMove()
 	// user intentions
 	//
 	for (i = 0; i < 3; i++)
-	{
-		// goldadv TODO - solve issue where aiming down slows swimming speed due to very tiny post-transform forward vector
 		wishvel[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
-	}
 
-	/* goldadv edit begin - Always stay near the surface unless diving
 	// Sinking after no other movement occurs
 	if (0 == pmove->cmd.forwardmove && 0 == pmove->cmd.sidemove && 0 == pmove->cmd.upmove)
 		wishvel[2] -= 60; // drift towards bottom
 	else				  // Go straight up by upmove amount.
 		wishvel[2] += pmove->cmd.upmove;
-	*/
-	wishvel[2] = 90; // Upward movement by default
-	// pmove->cmd.upmove // TODO - Diving and underwater movement
-	// goldadv edit end
 
 	// Copy it over and determine speed
 	VectorCopy(wishvel, wishdir);
@@ -1429,7 +1419,7 @@ void PM_WaterMove()
 		wishspeed = pmove->maxspeed;
 	}
 	// Slow us down a bit.
-	wishspeed *= 0.6; // goldadv edit - Slow down swimming significantly
+	wishspeed *= 0.8;
 
 	VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
 	// Water friction
@@ -2019,7 +2009,6 @@ void PM_FixPlayerCrouchStuck(int direction)
 	VectorCopy(test, pmove->origin); // Failed
 }
 
-/* goldadv edit - Crouch removed
 void PM_UnDuck()
 {
 	int i;
@@ -2052,7 +2041,7 @@ void PM_UnDuck()
 			return;
 		}
 
-		//pmove->flags &= ~FL_DUCKING; // goldadv edit - Crouch removed
+		pmove->flags &= ~FL_DUCKING;
 		pmove->bInDuck = 0;
 		pmove->view_ofs = VEC_VIEW;
 		pmove->flDuckTime = 0;
@@ -2063,9 +2052,7 @@ void PM_UnDuck()
 		PM_CatagorizePosition();
 	}
 }
-*/
 
-/* goldadv edit - Crouch removed
 void PM_Duck()
 {
 	int i;
@@ -2160,7 +2147,6 @@ void PM_Duck()
 		}
 	}
 }
-*/
 
 void PM_LadderMove(physent_t* pLadder)
 {
@@ -3087,15 +3073,13 @@ void PM_PlayerMove(qboolean server)
 	{
 		if (PM_CheckStuck())
 		{
-			/* goldadv edit - Crouch removed
 			// Let the user try to duck to get unstuck
 			PM_Duck();
 
 			if (PM_CheckStuck())
 			{
-			*/
-			return; // Can't move, we're stuck
-			// }
+				return; // Can't move, we're stuck
+			}
 		}
 	}
 
@@ -3124,9 +3108,7 @@ void PM_PlayerMove(qboolean server)
 
 	PM_UpdateStepSound();
 
-	/* goldadv edit - Crouch removed
 	PM_Duck();
-	*/
 
 	// Don't run ladder code if dead or on a train
 	if (0 == pmove->dead && (pmove->flags & FL_ONTRAIN) == 0)
@@ -3223,9 +3205,7 @@ void PM_PlayerMove(qboolean server)
 			// Was jump button pressed?
 			if ((pmove->cmd.buttons & IN_JUMP) != 0)
 			{
-				/* goldadv edit - Manual jumping removed
 				PM_Jump();
-				*/
 			}
 			else
 			{
@@ -3249,9 +3229,7 @@ void PM_PlayerMove(qboolean server)
 			{
 				if (!pLadder)
 				{
-					/* goldadv edit - Manual jumping removed
 					PM_Jump();
-					*/
 				}
 			}
 			else
